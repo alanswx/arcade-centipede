@@ -269,7 +269,6 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
    wire       clk_pix;
 
    assign trakball_i = 0;
-   assign joystick_i = 0;
    assign sw1_i = 8'h54;
    assign sw2_i = 8'b0;
 
@@ -288,6 +287,9 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
 
 //   assign playerinput_i = { coin_r, coin_c, coin_l, self_test, cocktail, slam, ~mstart1, ~mstart2, 1'b1, ~mfire };
    assign playerinput_i = { 1'b1, 1'b1, ~m_coin, ~btn_test, 1'b0, 1'b1, ~m_start1, ~m_start2, 1'b1, ~m_fire };
+	
+	
+	assign joystick_i = { ~m_right,~m_left,~m_down,~m_up, ~m_right,~m_left,~m_down,~m_up};
 //   assign playerinput_i = 10'b111_101_11_11;
 
    // game & cpu
@@ -353,11 +355,11 @@ assign CLK_VIDEO=clk6m;
 //assign AUDIO_L= {1'b0,audio[1] | audio[4],6'b0};
 //assign AUDIO_R= {1'b0,audio[1] | audio[4],6'b0};
 
-assign AUDIO_L= audio;
-assign AUDIO_R= audio;
+//assign AUDIO_L= audio;
+//assign AUDIO_R= audio;
 
-//assign AUDIO_L={audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],1'b0,1'b0,1'b0,8'b00000000};
-//assign AUDIO_R={audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],1'b0,1'b0,1'b0,8'b00000000};
+assign AUDIO_L={audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],1'b0,1'b0,1'b0,8'b00000000};
+assign AUDIO_R={audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],audio[1] | audio[4],1'b0,1'b0,1'b0,8'b00000000};
 
 
 
