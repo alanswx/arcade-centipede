@@ -482,6 +482,7 @@ set_location_assignment PIN_W10 -to altera_reserved_tdi
 set_location_assignment PIN_Y9 -to altera_reserved_tdo
 set_location_assignment PIN_U13 -to auto_stp_external_clock_1
 set_instance_assignment -name IO_STANDARD "2.5 V" -to auto_stp_external_clock_1
+set_global_assignment -name VERILOG_FILE ../rtl/scanconvert2_lx45.v
 set_global_assignment -name VERILOG_FILE ../rtl/rom.v
 set_global_assignment -name VERILOG_FILE ../rtl/ram.v
 set_global_assignment -name VERILOG_FILE ../rtl/pf_rom.v

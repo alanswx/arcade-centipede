@@ -124,7 +124,7 @@ localparam CONF_STR = {
 	"-;",
 	"-;",
 	"T6,Reset;",
-	"J,Throw,Start 1P,Start 2P;",
+	"J,Fire,Start 1P,Start 2P;",
 	"V,v",`BUILD_DATE
 };
 
@@ -168,8 +168,6 @@ hps_io #(.STRLEN(($size(CONF_STR)>>3) )/*, .PS2DIV(1000), .WIDE(0)*/) hps_io
 
 	.conf_str(CONF_STR),
 	.joystick_0(joystick_0),
-	.joystick_analog_0(analog_joy_0),
-
 	.joystick_1(joystick_1),
 	.buttons(buttons),
 	.forced_scandoubler(forced_scandoubler),
@@ -247,8 +245,6 @@ wire m_start1 = btn_one_player  | joy[5];
 wire m_start2 = btn_two_players | joy[6];
 wire m_coin   = m_start1 | m_start2;
 
-wire [7:0] joyx=8'd256-($signed(analog_joy_0[7:0])+8'd128); 
-wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128); 
 
 
    wire auto_coin_n, auto_start_n, auto_throw_n;
@@ -271,7 +267,7 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
    assign trakball_i = 0;
    assign sw1_i = 8'h54;
    assign sw2_i = 8'b0;
-
+/*
    wire       coin_r, coin_c, coin_l, self_test, cocktail, slam, start1, start2, fire2, fire1;
 
    assign coin_r = 1;
@@ -284,14 +280,19 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
    assign start2 = 1;
    assign fire2 = 1;
    assign fire1 = 1;
-
+*/
 //   assign playerinput_i = { coin_r, coin_c, coin_l, self_test, cocktail, slam, ~mstart1, ~mstart2, 1'b1, ~mfire };
-   assign playerinput_i = { 1'b1, 1'b1, ~m_coin, ~btn_test, 1'b0, 1'b1, ~m_start1, ~m_start2, 1'b1, ~m_fire };
+   assign playerinput_i = { 1'b1, 1'b1, ~m_coin, ~btn_test, 1'b0, 1'b1, ~m_start1, ~m_start2, ~m_fire, ~m_fire };
 	
 	
 	assign joystick_i = { ~m_right,~m_left,~m_down,~m_up, ~m_right,~m_left,~m_down,~m_up};
 //   assign playerinput_i = 10'b111_101_11_11;
 
+
+
+
+	
+	
    // game & cpu
    centipede uut(
 		 .clk_12mhz(clk12m),
@@ -310,6 +311,15 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
 		 .vsync_o(vsync),
 		 .hblank_o(hblank),
 		 .vblank_o(vblank)
+		 /*
+		 
+		 .rgb_o(cga_rgb),
+		 .sync_o(cga_csync),
+		 .hsync_o(cga_hsync),
+		 .vsync_o(cga_vsync),
+		 .hblank_o(cga_hblank),
+		 .vblank_o(cga_vblank),
+*/
 		 );
 
 
@@ -318,11 +328,15 @@ wire [7:0] joyy=8'd256-($signed(analog_joy_0[15:8])+8'd128);
 ///////////////////////////////////////////////////
 //wire clk_sys, clk_ram, clk_ram2, clk_pixel, locked;
 wire clk_sys,locked,clk12m,clk6m;
+
+
+
 wire hsync,vsync;
 
 wire [8:0] rgb;
 
 wire hblank,vblank;
+
 
 			
 //assign VGA_B = 8'h00;//{ rgb[8], rgb[7], rgb[6],5'b00000 };
@@ -345,11 +359,46 @@ assign VGA_HS=hsync;
 assign VGA_VS=vsync;
 
 assign VGA_DE=~(hblank|vblank);
+
 assign CLK_VIDEO=clk6m;
 
 
 
 
+/*
+   scanconvert2_lx45 scanconv(
+			      .clk6m(clk6m),
+			      .clk12m(clk12m),
+			      .clk25m(clk_sys),
+			      .reset(reset),
+			      .hsync_i(cga_hsync),
+			      .vsync_i(cga_vsync),
+			      .hblank_i(cga_hblank),
+			      .vblank_i(cga_vblank),
+			      .rgb_i(cga_rgb),
+			      .hsync_o(vga_hsync),
+			      .vsync_o(vga_vsync),
+			      .blank_o(vga_blank),
+			      .rgb_o(vga_rgb)
+
+			      );
+   wire [7:0] vga_rgb;
+wire vga_hsync,vga_vsync,vga_blank;
+
+	assign VGA_B = { vga_rgb[7], vga_rgb[6], vga_rgb[5],5'b00000 };
+   assign VGA_G = { vga_rgb[4], vga_rgb[3], 1'b0,5'b00000 };
+   assign VGA_R = { vga_rgb[2], vga_rgb[1], vga_rgb[0],5'b00000 };
+assign VGA_HS=vga_hsync;
+assign VGA_VS=vga_vsync;
+
+
+
+assign VGA_DE=~(vga_blank);
+assign CLK_VIDEO=clk_sys;
+
+*/					
+					
+					
 //assign AUDIO_L= {audio[1],7'b0};
 //assign AUDIO_R= {audio[4],7'b0};
 //assign AUDIO_L= {1'b0,audio[1] | audio[4],6'b0};
