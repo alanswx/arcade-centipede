@@ -14,9 +14,12 @@
 #include "cosim.h"
 #endif
 
+#include "vga.h"
+
 Vcentipede_verilator *top;                // Instantiation of module
 
-static unsigned long long main_time = 0;  // Current simulation time
+//static unsigned long long main_time = 0;  // Current simulation time
+static vluint64_t main_time = 0;  // Current simulation time
 
 
 double sc_time_stamp () {       // Called by $time in Verilog
@@ -26,32 +29,32 @@ double sc_time_stamp () {       // Called by $time in Verilog
 uint32_t cycles;
 
 /* public */
-#define CLK	top->v__DOT__clk
-#define RESET	top->v__DOT__reset
-#define VSW1	top->v__DOT__sw1
-#define VSW2	top->v__DOT__sw2
-#define PLAYERINPUT top->v__DOT__playerinput
-#define JS	top->v__DOT__joystick
+#define CLK	top->centipede_verilator__DOT__clk
+#define RESET	top->centipede_verilator__DOT__reset
+#define VSW1	top->centipede_verilator__DOT__sw1
+#define VSW2	top->centipede_verilator__DOT__sw2
+#define PLAYERINPUT top->centipede_verilator__DOT__playerinput
+#define JS	top->centipede_verilator__DOT__joystick
 
 /* private */
-#define S_6MHZ	top->v__DOT__uut__DOT__s_6mhz
-#define IRQ	top->v__DOT__uut__DOT__irq
-#define MPU_RESET top->v__DOT__uut__DOT__mpu_reset
+#define S_6MHZ	top->centipede_verilator__DOT__uut__DOT__s_6mhz
+#define IRQ	top->centipede_verilator__DOT__uut__DOT__irq
+#define MPU_RESET top->centipede_verilator__DOT__uut__DOT__mpu_reset
 
-#define PC	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__pc_reg
-#define S_SYNC	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_sync
-#define A_REG	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__a_reg
-#define X_REG	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__x_reg
-#define Y_REG	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__y_reg
-#define SP	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__sp_reg
+#define PC	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__pc_reg
+#define S_SYNC	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_sync
+#define A_REG	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__a_reg
+#define X_REG	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__x_reg
+#define Y_REG	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__y_reg
+#define SP	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__sp_reg
 
-#define NF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__nf
-#define VF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__vf
-#define BF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__bf
-#define DF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__df
-#define IM	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__im
-#define ZF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__zf
-#define CF	top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__cf
+#define NF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__nf
+#define VF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__vf
+#define BF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__bf
+#define DF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__df
+#define IM	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__im
+#define ZF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__zf
+#define CF	top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__cf
 
 void playinput_assert(int s)
 {
@@ -60,7 +63,7 @@ void playinput_assert(int s)
 
 void playinput_deassert(int s)
 {
-	PLAYERINPUT |= ~(1<<s);
+	PLAYERINPUT |= (1<<s);
 }
 
 void
@@ -76,16 +79,28 @@ sw1_deassert(int s)
 }
 
 void
+js_assert(int s)
+{
+	JS &= ~(1<<s);
+}
+
+void
+js_deassert(int s)
+{
+	JS |= 1<<s;
+}
+
+void
 dump_ram(void)
 {
 	int i;
 	for (i = 0; i < 256; i++) {
 		printf("%i %02x%02x%02x%02x\n",
 		       i,
-		       top->v__DOT__uut__DOT__pf_ram__DOT__ram3[i],
-		       top->v__DOT__uut__DOT__pf_ram__DOT__ram2[i],
-		       top->v__DOT__uut__DOT__pf_ram__DOT__ram1[i],
-		       top->v__DOT__uut__DOT__pf_ram__DOT__ram0[i]);
+		       top->centipede_verilator__DOT__uut__DOT__pf_ram__DOT__ram3[i],
+		       top->centipede_verilator__DOT__uut__DOT__pf_ram__DOT__ram2[i],
+		       top->centipede_verilator__DOT__uut__DOT__pf_ram__DOT__ram1[i],
+		       top->centipede_verilator__DOT__uut__DOT__pf_ram__DOT__ram0[i]);
 	}
 }
 
@@ -137,7 +152,7 @@ int main(int argc, char** argv)
 	    }
     }
 
-#ifdef VM_TRACE
+#if VM_TRACE
     if (show_waves) {
 	    Verilated::traceEverOn(true);
 	    VL_PRINTF("Enabling waves...\n");
@@ -170,10 +185,10 @@ int main(int argc, char** argv)
 		    r2 = (2+i*4) & 0x3f;
 		    r3 = (3+i*4) & 0x3f;
 		    r0 = r1 = r2 = r3 = 0x42;
-		    top->v__DOT__uut__DOT__pf_ram0__DOT__ram[i] = r0;
-		    top->v__DOT__uut__DOT__pf_ram1__DOT__ram[i] = r1;
-		    top->v__DOT__uut__DOT__pf_ram2__DOT__ram[i] = r2;
-		    top->v__DOT__uut__DOT__pf_ram3__DOT__ram[i] = r3;
+		    top->centipede_verilator__DOT__uut__DOT__pf_ram0__DOT__ram[i] = r0;
+		    top->centipede_verilator__DOT__uut__DOT__pf_ram1__DOT__ram[i] = r1;
+		    top->centipede_verilator__DOT__uut__DOT__pf_ram2__DOT__ram[i] = r2;
+		    top->centipede_verilator__DOT__uut__DOT__pf_ram3__DOT__ram[i] = r3;
 	    }
     }
 #endif
@@ -182,8 +197,8 @@ int main(int argc, char** argv)
     while (!Verilated::gotFinish()) {
 
         if (do_halt) {
-		top->v__DOT__uut__DOT__mpu_reset_cntr = 0;
-		top->v__DOT__uut__DOT__mpu_reset = 1;
+		top->centipede_verilator__DOT__uut__DOT__mpu_reset_cntr = 0;
+		top->centipede_verilator__DOT__uut__DOT__mpu_reset = 1;
 	}
 
 	if (show_loops) {
@@ -195,6 +210,12 @@ int main(int argc, char** argv)
 #define COIN_DUR	0
 #define START_TIME	(3000000*2)
 #define START_DUR	(200000*2)
+
+
+	// read the buttons here
+	// read the joystick here
+
+
 
 	// coin
 	if (do_coin1) {
@@ -246,7 +267,46 @@ int main(int argc, char** argv)
 		//
 		cycles++;
 		if ((cycles % 10000) == 0)
+                {
 			printf("cycles: %u, time %llu (pc=%x)\n", cycles, main_time, next_pc_value);
+
+                        if (joystick_fire()) {
+                            printf("FIRE!!\n");
+			    playinput_assert(0);
+                        }
+                        else {
+			    playinput_deassert(0);
+                        }
+                        if (joystick_coin()){
+                            printf("coin\n");
+			    playinput_assert(7);
+                        }
+                        else
+			    playinput_deassert(7);
+                        if (joystick_start())
+			    playinput_assert(3);
+                        else
+			    playinput_deassert(3);
+                        //m_right,~m_left,~m_down,~m_up
+                        if (joystick_right())
+			    js_assert(7);
+                        else
+			    js_deassert(7);
+                        if (joystick_left())
+			    js_assert(6);
+                        else
+			    js_deassert(6);
+                        if (joystick_down())
+			    js_assert(5);
+                        else
+			    js_deassert(5);
+
+                        if (joystick_up())
+			    js_assert(4);
+                        else
+			    js_deassert(4);
+
+                }
 
 		//
 		if (next_pc_value != last_pc_value) {
@@ -299,11 +359,11 @@ int main(int argc, char** argv)
 
 #ifdef COSIM
 	int old_s_nmi1;
-	if (top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_nmi1 != 0 && old_s_nmi1 == 0 && do_cosim) {
+	if (top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_nmi1 != 0 && old_s_nmi1 == 0 && do_cosim) {
 		printf("rtl: s_nmi1\n");
 		cosim_int_event(PC, 1);
 	}
-	old_s_nmi1 = top->v__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_nmi1;
+	old_s_nmi1 = top->centipede_verilator__DOT__uut__DOT__p6502__DOT__bc6502__DOT__s_nmi1;
 
 //	if (S_SYNC && old_ssync == 0 && IRQ == 0 && RESET == 0 && MPU_RESET == 0 && in_cosim && do_cosim) {
 //		//printf("rtl: set irq\n");
@@ -349,7 +409,7 @@ int main(int argc, char** argv)
 		result = 2;
 	}
 
-#ifdef VM_TRACE
+#if VM_TRACE
 	if (tfp) {
 		if (show_min_time == 0 && show_max_time == 0)
 			tfp->dump(main_time);

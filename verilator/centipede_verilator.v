@@ -37,7 +37,8 @@ module centipede_verilator;
 		 .vsync_o(vsync),
 		 .hblank_o(hblank),
 		 .vblank_o(vblank),
-		 .audio_o(audio)
+		 .audio_o(audio),
+		.clk_6mhz_o()
 		 );
 
 `ifdef SDL_DISPLAY
@@ -65,7 +66,10 @@ module centipede_verilator;
    assign vgaGreen = rgb[5:3];
    assign vgaRed   = rgb[2:0];
 
-   assign pxd = (hblank | vblank) ? 32'b0 : { 24'b0, vgaBlue, vgaGreen[2:1], vgaRed };
+   //assign pxd = (hblank | vblank) ? 32'b0 : { 24'b0, vgaBlue, vgaGreen[2:1], vgaRed };
+   //assign pxd = (hblank | vblank) ? 32'b0 : { vgaRed,5'b0,vgaGreen,5'b0,vgaBlue,5'b0,8'b11111111 };
+   assign pxd = (hblank | vblank) ? 32'b0 : { 8'b11111111,vgaRed,5'b0,vgaGreen,5'b0,vgaBlue,5'b0 };
+//ARGB8888
 
    assign vs = {31'b0, ~vsync};
    assign hs = {31'b0, ~hsync};

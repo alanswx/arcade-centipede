@@ -2,9 +2,9 @@
 #
 #
 
-#V = verilator
+V = verilator
 #V = /usr/local/bin/verilator
-V = /usr/local/src/verilator-3.876/bin/verilator
+#V = /usr/local/src/verilator-3.876/bin/verilator
 
 TOP = --top-module centipede_verilator
 RTL = ../rtl
@@ -12,11 +12,11 @@ CPU = ../6502/bc
 ROM = ../roms/v3
 INC = +incdir+$(RTL) +incdir+$(CPU) +incdir+$(ROM)
 
-DEFINE = +define+debug=1 +define+SIMULATION=1
-LDFLAGS = "-L../../sim/lib6502 -lSDL -lpthread -l6502"
+DEFINE = +define+debug=1 +define+SIMULATION=1 
+LDFLAGS = "-L../../sim/lib6502 -lSDL2 -lpthread -l6502"
 EXE = ./tmp/Vcentipede_verilator
 OPT = -O2 
-CFLAGS = "-O -DCOSIM=1 -I../../emu/famec"
+CFLAGS = "-O -DCOSIM=0 -I../../emu/famec"
 
 #V_SRC = \
 #	centipede_verilator.v \
@@ -44,7 +44,7 @@ VOUT = tmp/Vcentipede_verilator.cpp
 all: $(EXE)
 
 $(VOUT): $(V_SRC) $(V_DEP) Makefile
-	$V -cc $(OPT) -LDFLAGS $(LDFLAGS) -exe --trace --Mdir ./tmp $(DEFINE) $(INC) $(TOP) -CFLAGS $(CFLAGS) $(V_SRC) $(C_SRC)
+	$V -cc $(OPT) -LDFLAGS $(LDFLAGS) -exe --Mdir ./tmp $(DEFINE) $(INC) $(TOP) -CFLAGS $(CFLAGS) $(V_SRC) $(C_SRC)
 
 $(EXE): $(VOUT) $(C_SRC)
 	(cd tmp; make -f Vcentipede_verilator.mk)

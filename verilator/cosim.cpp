@@ -138,9 +138,9 @@ void checkram(void)
 	int i, c;
 	c = 0;
 	for (i = 0; i < 0x3ff; i++) {
-		if (ram[i] != _top->v__DOT__uut__DOT__ram__DOT__mem[i]) {
+		if (ram[i] != _top->centipede_verilator__DOT__uut__DOT__ram__DOT__mem[i]) {
 			printf("ram mismatch @ %04x ; sim %02x rtl %02x\n", 
-			       i, ram[i], _top->v__DOT__uut__DOT__ram__DOT__mem[i]);
+			       i, ram[i], _top->centipede_verilator__DOT__uut__DOT__ram__DOT__mem[i]);
 			c++;
 		}
 	}
@@ -173,7 +173,7 @@ unsigned char memrd(unsigned addr, int PC, int totcycles)
 
 	if (addr < 0x3ff) {
 		if (0) printf("memrd ram %x -> %x (sim %x) (pc %x)\n",
-			      addr, _top->v__DOT__uut__DOT__ram__DOT__mem[addr], ram[addr], PC);
+			      addr, _top->centipede_verilator__DOT__uut__DOT__ram__DOT__mem[addr], ram[addr], PC);
 		if (0) printf("memrd ram %x -> %x (pc %x)\n", addr, ram[addr], PC);
 		return ram[addr];
 	}
@@ -194,21 +194,23 @@ unsigned char memrd(unsigned addr, int PC, int totcycles)
 
 	switch (addr) {
 	case 0x800:
-		return _top->v__DOT__sw1;
+		return _top->centipede_verilator__DOT__sw1;
 	case 0x801:
-		return _top->v__DOT__sw2;
+		return _top->centipede_verilator__DOT__sw2;
 	case 0xc00:
-		v = _top->v__DOT__uut__DOT__playerin_out0;
+		v = _top->centipede_verilator__DOT__uut__DOT__playerin_out0;
 		return v;
 	case 0xc01:
-		v = _top->v__DOT__uut__DOT__playerin_out1;
+		v = _top->centipede_verilator__DOT__uut__DOT__playerin_out1;
 		printf("playerin_out0 %x, playerin_out1 %x, sw1 %x, sw2 %x\n",
-		       _top->v__DOT__uut__DOT__playerin_out0,
-		       _top->v__DOT__uut__DOT__playerin_out1,
-		       _top->v__DOT__sw1, _top->v__DOT__sw2);
+		       _top->centipede_verilator__DOT__uut__DOT__playerin_out0,
+		       _top->centipede_verilator__DOT__uut__DOT__playerin_out1,
+		       _top->centipede_verilator__DOT__sw1, _top->centipede_verilator__DOT__sw2);
 		return v;
 	case 0x100a:
-		v = _top->v__DOT__uut__DOT__last_pokey_rd;
+		//v = _top->centipede_verilator__DOT__uut__DOT__last_pokey_rd;
+// IS THIS RIGHT?
+		v = _top->centipede_verilator__DOT__uut__DOT__pokey_out;
 		return v;
 	}
 
