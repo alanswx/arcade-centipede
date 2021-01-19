@@ -14,3 +14,4 @@
 #define ERRORBRK 0x05
 
 void dodebugger (int type);
+void reload(char *s);

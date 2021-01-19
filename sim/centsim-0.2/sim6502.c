@@ -20,6 +20,7 @@
 #include "sim6502.h"
 #include "macro6502.h"
 #include "debugger.h"
+#include "display.h"
 
 
 #define dobreak(arg) do { \

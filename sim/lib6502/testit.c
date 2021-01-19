@@ -29,7 +29,7 @@ byte memrdwd(unsigned addr, int PC, int totcycles)
 	return (memrd(addr,PC,totcycles) | (memrd(addr+1,PC,totcycles) << 8));
 }
 
-main()
+int main(int count, char *argv[])
 {
 	int i;
 	int pc, sp, sr, a, x, y;

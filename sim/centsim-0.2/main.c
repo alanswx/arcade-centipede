@@ -25,6 +25,7 @@
 #include "display.h"
 #include "misc.h"
 #include "sim6502.h"
+#include "debugger.h"
 
 
 int getpid(void);
