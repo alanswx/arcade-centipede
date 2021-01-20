@@ -6,7 +6,7 @@
 
 `define SDL_DISPLAY
 
-module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_download,ioctl_addr,ioctl_dout,ioctl_index,ioctl_wait,ioctl_wr);
+module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_upload,ioctl_download,ioctl_addr,ioctl_dout,ioctl_din,ioctl_index,ioctl_wait,ioctl_wr);
 
    input clk_sys/*verilator public_flat*/;
    input clk_vid/*verilator public_flat*/;
@@ -19,10 +19,12 @@ module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_download,
    output VGA_HS;
    output VGA_VS;
 
+   input        ioctl_upload;
    input        ioctl_download;
    input        ioctl_wr;
    input [24:0] ioctl_addr;
    input [7:0] ioctl_dout;
+   input [7:0] ioctl_din;
    input [7:0]  ioctl_index;
    output  reg     ioctl_wait=1'b0;
 

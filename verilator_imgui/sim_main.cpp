@@ -32,6 +32,7 @@
 #include "../imgui/imgui_memory_editor.h"
 
 FILE *ioctl_file=NULL;
+FILE *ioctl_upload_file=NULL;
 int ioctl_next_addr = 0x0;
 
 #ifndef WINDOWS
@@ -128,6 +129,8 @@ int multi_step_amount = 1024;
 
 void ioctl_download_before_eval(void);
 void ioctl_download_after_eval(void);
+void ioctl_upload_before_eval(void);
+void ioctl_upload_after_eval(void);
 
 
 #define VSW1    top->top__DOT__sw1
@@ -994,8 +997,10 @@ static int clkdiv=3;
 		}
 
 
-	if (top->clk_sys ) 
+	if (top->clk_sys ) {
+		ioctl_upload_before_eval();
 		ioctl_download_before_eval();
+	}
 	else if (ioctl_file)
 		printf("skipping download this cycle %d\n",top->clk_sys);
 
@@ -1003,8 +1008,10 @@ static int clkdiv=3;
 
 		top->eval();            // Evaluate model!
 
-	if (top->clk_sys ) 
+	if (top->clk_sys ) {
+		ioctl_upload_after_eval();
 		ioctl_download_after_eval();
+		}
 
 
 
@@ -1020,6 +1027,56 @@ static int clkdiv=3;
 	return 0;
 }
 
+int ioctl_upload_size = 0;
+void ioctl_upload_setfile(char *file, int index,int size)
+{
+	ioctl_upload_size = size;
+	ioctl_next_addr = -1;
+	top->ioctl_addr=ioctl_next_addr;
+	top->ioctl_index = index;
+    ioctl_upload_file=fopen(file,"wb");
+    if (!ioctl_upload_file) printf("error opening %s\n",file);
+}
+void ioctl_upload_before_eval()
+{
+	if (ioctl_upload_file) {
+printf("ioctl_upload_before_eval %x\n",top->ioctl_addr);
+	    if (top->ioctl_wait==0) {
+	    top->ioctl_upload=1;
+	    top->ioctl_wr = 1;
+	
+	    if (ioctl_next_addr > ioctl_upload_size) {
+		    fclose(ioctl_upload_file);
+		    ioctl_upload_file=NULL;
+		    top->ioctl_upload=0;
+	    	    top->ioctl_wr = 0;
+		   printf("finished upload\n");
+
+	    }
+	    	if (ioctl_upload_file) {
+	    		fputc(top->ioctl_din,ioctl_upload_file);
+		
+printf("ioctl_upload_before_eval: din %x \n",top->ioctl_din);
+	    		ioctl_next_addr++;
+	    	}
+		}
+	}
+	else {
+	top->ioctl_upload=0;
+	top->ioctl_wr=0;
+	}
+
+}
+int nextchar = 0;
+void ioctl_upload_after_eval()
+{
+    top->ioctl_addr=ioctl_next_addr;
+nextchar=top->ioctl_din;
+   //top->ioctl_dout=(unsigned char)nextchar;
+if (ioctl_upload_file) printf("ioctl_upload_after_eval %x wr %x dl %x\n",top->ioctl_addr,top->ioctl_wr,top->ioctl_upload);
+}
+
+
 void ioctl_download_setfile(char *file, int index)
 {
 	ioctl_next_addr = -1;
@@ -1028,7 +1085,6 @@ void ioctl_download_setfile(char *file, int index)
     ioctl_file=fopen(file,"rb");
     if (!ioctl_file) printf("error opening %s\n",file);
 }
-int nextchar = 0;
 void ioctl_download_before_eval()
 {
 	if (ioctl_file) {
@@ -1070,23 +1126,18 @@ void ioctl_download_after_eval()
 if (ioctl_file) printf("ioctl_download_after_eval %x wr %x dl %x\n",top->ioctl_addr,top->ioctl_wr,top->ioctl_download);
 }
 
+void start_save_vram() {
+printf("start save vram");
+  ioctl_upload_setfile("cent.hi",4,32);
+}
+void start_load_vram() {
+printf("load vram here\n");
+ ioctl_download_setfile("cent.hi",4);
+
+}
 void start_load_rom() {
-printf("load rom here\n");
- ioctl_download_setfile("../release-WIP/boot.rom",0);
-
-}
-
-void start_load_cart() {
-printf("load cart here\n");
- ioctl_download_setfile("../release-WIP/asteroids.a78",1);
-}
-void start_load_cart_3() {
-printf("load cart here\n");
- ioctl_download_setfile("../release-WIP/DiagCart2.a78",1);
-}
-void start_load_cart_2() {
-printf("load cart here 2\n");
- ioctl_download_setfile("../release-WIP/PolePositionII.a78",1);
+printf("load config here\n");
+ ioctl_download_setfile("hi.bin",3);
 }
 
 int my_count = 0;
@@ -1377,10 +1428,9 @@ int main(int argc, char** argv, char** env) {
 		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		//ImGui::PlotLines("Lines", values, IM_ARRAYSIZE(values), values_offset, "sample", -1.0f, 1.0f, ImVec2(0, 80));
 		if (ImGui::Button("RESET")) main_time = 0;
-		if (ImGui::Button("LOAD ROM")) start_load_rom();
-		ImGui::SameLine(); if (ImGui::Button("LOAD CART")) start_load_cart();
-		ImGui::SameLine(); if (ImGui::Button("LOAD CART POLE")) start_load_cart_2();
-		ImGui::SameLine(); if (ImGui::Button("LOAD CART DIAG")) start_load_cart_3();
+		if (ImGui::Button("LOAD HI CONFIG")) start_load_rom();
+		ImGui::SameLine(); if (ImGui::Button("SAVE HI")) start_save_vram();
+		ImGui::SameLine(); if (ImGui::Button("LOAD HI")) start_load_vram();
 		ImGui::Text("main_time %d", main_time);
 		ImGui::Text("frame_count: %d  line_count: %d", frame_count, line_count);
 		// AJS // ImGui::Text("Addr:   0x%08X", top->bus_mem_addr);
@@ -1497,7 +1547,7 @@ else
          playinput_deassert(3);
 
 
-		if (run_enable) for (int step = 0; step < 100*4096; step++) verilate();	// Simulates MUCH faster if it's done in batches.
+		if (run_enable) for (int step = 0; step < 4096; step++) verilate();	// Simulates MUCH faster if it's done in batches.
 		else {																// But, that will affect the values we can grab for the GUI.
 			if (single_step) verilate();
 			if (multi_step) for (int step = 0; step < multi_step_amount; step++) verilate();
