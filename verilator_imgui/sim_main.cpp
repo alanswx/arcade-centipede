@@ -134,6 +134,26 @@ void ioctl_download_after_eval(void);
 #define VSW2    top->top__DOT__sw2
 #define PLAYERINPUT top->top__DOT__playerinput
 #define JS      top->top__DOT__joystick
+void
+js_assert(int s)
+{
+        JS &= ~(1<<s);
+}
+
+void
+js_deassert(int s)
+{
+        JS |= 1<<s;
+}
+void playinput_assert(int s)
+{
+        PLAYERINPUT &= ~(1<<s);
+}
+
+void playinput_deassert(int s)
+{
+        PLAYERINPUT |= (1<<s);
+}
 
 #ifdef WINDOWS
 // Data
@@ -863,7 +883,11 @@ static int clkdiv=3;
 			rgb[1] = top->VGA_G ;
 			rgb[2] = top->VGA_R ;
 			//fwrite(rgb, 1, 3, vgap);		// Write 24-bit values to the file.
-			uint32_t vga_addr = (line_count * 1024) + pix_count;
+
+//#define VGA_WIDTH 1024
+//#define VGA_HEIGHT 1024
+			//uint32_t vga_addr = (line_count * 1024) + pix_count;
+			uint32_t vga_addr = ((1024-pix_count) * 1024) +line_count;
 			if (vga_addr <= vga_size) vga_ptr[vga_addr] = (rgb[0] << 16) | (rgb[1] << 8) | (rgb[2] << 0);
 			
 			
@@ -1387,13 +1411,14 @@ int main(int argc, char** argv, char** env) {
 		ImGui::End();
 
 
+#if 0
 		ImGui::Begin("RAM Editor - Offset is 0x02000000");
 		ImGui::Checkbox("Follow Writes", &follow_writes);
 		// AJS // if (follow_writes) write_address = (top->bus_mem_addr & 0x00FFFFFF) >> 2;
 		mem_edit_1.DrawContents(ram_ptr, ram_size, 0);
 		ImGui::End();
-		
-
+#endif		
+#if 0
 		ImGui::Begin("CPU Registers");
 		ImGui::Spacing();
 		//ImGui::Text("PC       0x%04X", top->top__DOT__main__DOT__cpu_inst__DOT__core__DOT__PC);
@@ -1403,7 +1428,7 @@ int main(int argc, char** argv, char** env) {
 		//ImGui::Spacing();
 		ImGui::Separator();
  		ImGui::End();
-
+#endif
 // initialize??
 top->top__DOT__playerinput=0x3df;
 #if 1
@@ -1440,7 +1465,39 @@ top->top__DOT__playerinput=0x3df;
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
 #endif
-		if (run_enable) for (int step = 0; step < 4096; step++) verilate();	// Simulates MUCH faster if it's done in batches.
+
+ ImGuiIO& io = ImGui::GetIO();
+
+if (ImGui::IsKeyPressed(SDL_SCANCODE_SPACE) ){
+                            playinput_assert(0);
+}
+else {
+                            playinput_deassert(0);
+}
+if (ImGui::IsKeyPressed(SDL_SCANCODE_LEFT) ){
+                            js_assert(6);
+}
+else {
+                            js_deassert(6);
+}
+if (ImGui::IsKeyPressed(SDL_SCANCODE_RIGHT) ){
+                            js_assert(7);
+}
+else {
+                            js_deassert(7);
+}
+if (ImGui::IsKeyPressed(SDL_SCANCODE_5)) {
+         playinput_assert(7);
+}
+else 
+         playinput_deassert(7);
+if (ImGui::IsKeyPressed(SDL_SCANCODE_1))
+         playinput_assert(3);
+else 
+         playinput_deassert(3);
+
+
+		if (run_enable) for (int step = 0; step < 100*4096; step++) verilate();	// Simulates MUCH faster if it's done in batches.
 		else {																// But, that will affect the values we can grab for the GUI.
 			if (single_step) verilate();
 			if (multi_step) for (int step = 0; step < multi_step_amount; step++) verilate();
