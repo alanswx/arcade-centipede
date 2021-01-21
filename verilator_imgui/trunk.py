@@ -11,7 +11,7 @@ def main(args):
     while byte:
         # Do stuff with byte.
         byte = f.read(1)
-        if (byte and count!=0):
+        if (byte):
           romfile.write(byte)
         count=count+1
 

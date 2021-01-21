@@ -124,15 +124,15 @@ start -> wait for this value at start
 end -> wait for this value at end
 */
 
-assign ram_address = ram_addr;
+assign ram_address = ram_addr[9:0];
    // save the config into a chunk of memory
 reg [7:0] ioctl_dout_r;
 reg [7:0] ioctl_dout_r2;
 reg [7:0] ioctl_dout_r3;
 
 reg [3:0] counter = 4'b0;
-reg [24:0] ram_addr;
-reg [24:0] addr_base;
+reg [23:0] ram_addr;
+reg [23:0] addr_base;
 reg [7:0] offset;
 wire [7:0] length;
 
@@ -194,10 +194,13 @@ enddata_table(
 always @(posedge clk) begin
  if (ioctl_upload) begin
     ram_addr <= addr_base + offset;
-    if (offset< length)  /* length is 1 too big? */
+
+    if (offset==length-2)
+	counter<=counter+1'b1;
+
+    if (offset< length -1 )  /* length is 1 too big? */
         offset<=offset +1'b1;
     else begin
-	counter<=counter+1'b1;
         offset<=8'b0;
     end
     $display("ioctl_addr %x addr_base %x offset %x  counter %x length %x ram_addr %x", ioctl_addr, addr_base,offset,counter,length,ram_addr);
