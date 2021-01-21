@@ -24,7 +24,7 @@ module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_upload,io
    input        ioctl_wr;
    input [24:0] ioctl_addr;
    input [7:0] ioctl_dout;
-   input [7:0] ioctl_din;
+   output [7:0] ioctl_din;
    input [7:0]  ioctl_index;
    output  reg     ioctl_wait=1'b0;
 
@@ -41,7 +41,9 @@ module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_upload,io
    reg [7:0]  sw1/*verilator public_flat*/;
    reg [7:0]  sw2/*verilator public_flat*/;
    reg [9:0]  playerinput/*verilator public_flat*/;
-   
+  
+wire [9:0]ram_address;
+ 
    centipede uut(
 		 .clk_12mhz(clk),
  		 .reset(reset),
@@ -58,8 +60,16 @@ module top(VGA_R,VGA_B,VGA_G,VGA_HS,VGA_VS,reset,clk_sys,clk_vid,ioctl_upload,io
 		 .hblank_o(hblank),
 		 .vblank_o(vblank),
 		 .audio_o(audio),
-		.clk_6mhz_o()
+		.clk_6mhz_o(),
+	
+		.ram_address(ram_address),
+		.ram_data(ioctl_din)
 		 );
+
+always @(posedge clk) begin
+if (ioctl_upload)
+    $display("ioctl_addr %x ram_address %x ioctl_din %x ", ioctl_addr, ram_address ,ioctl_din );
+end
 
    wire [2:0]  vgaBlue;
    wire [2:0]  vgaGreen;
@@ -84,7 +94,8 @@ hiscore hi (
    .ioctl_addr(ioctl_addr),
    .ioctl_dout(ioctl_dout),
    .ioctl_din(ioctl_din),
-   .ioctl_index(ioctl_index)
+   .ioctl_index(ioctl_index),
+   .ram_address(ram_address)
 
 );
  
@@ -98,7 +109,8 @@ module hiscore (
    input [24:0] ioctl_addr,
    input [7:0] ioctl_dout,
    input [7:0] ioctl_din,
-   input [7:0]  ioctl_index
+   input [7:0]  ioctl_index,
+   output [9:0] ram_address
 	
 );
 
@@ -111,7 +123,8 @@ len -> how many bytes
 start -> wait for this value at start
 end -> wait for this value at end
 */
-	
+
+assign ram_address = ram_addr;
    // save the config into a chunk of memory
 reg [7:0] ioctl_dout_r;
 reg [7:0] ioctl_dout_r2;
@@ -181,7 +194,7 @@ enddata_table(
 always @(posedge clk) begin
  if (ioctl_upload) begin
     ram_addr <= addr_base + offset;
-    if (offset!=length) 
+    if (offset< length)  /* length is 1 too big? */
         offset<=offset +1'b1;
     else begin
 	counter<=counter+1'b1;

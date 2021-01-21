@@ -43,7 +43,9 @@ module centipede(
 		 output       hblank_o,
 		 output       vblank_o,
 		 output [7:0] audio_o,
-		 output	      clk_6mhz_o
+		 output	      clk_6mhz_o,
+input [9:0] ram_address,
+output [7:0] ram_data
 		 );
 
    //
@@ -338,6 +340,20 @@ module centipede(
 	   .dout(rom_out[7:0]),
 	   .cs_n(rom_n));
 
+dpram_dc #(.addr_width_g(10), .data_width_g(8))
+ram (
+	.clock_a(s_6mhz),
+	.address_a(ab[9:0]),
+	.data_a(db_out[7:0]),
+	.q_a(ram_out[7:0]),
+	.wren_a(~write_n & ~ram0_n),
+
+	.clock_b(clk_12mhz),
+	.address_b(ram_address),
+	.q_b(ram_data)
+);
+
+/*
    ram ram(.clk(s_6mhz),
 	   .reset(reset),
 	   .a(ab[9:0]),
@@ -345,6 +361,7 @@ module centipede(
 	   .dout(ram_out[7:0]),
 	   .cs_n(ram0_n),
    	   .we_n(write_n));
+*/
 
 //
 `ifdef debug_ram

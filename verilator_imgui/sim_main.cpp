@@ -1128,7 +1128,7 @@ if (ioctl_file) printf("ioctl_download_after_eval %x wr %x dl %x %x\n",top->ioct
 
 void start_save_vram() {
 printf("start save vram");
-  ioctl_upload_setfile("cent.hi",4,32);
+  ioctl_upload_setfile("cent.hi",4,30);
 }
 void start_load_vram() {
 printf("load vram here\n");

@@ -5,7 +5,7 @@ import math
 
 def main(args):
    namearray=args[0].split('.')
-   romfile = open(namearray[0]+".bin", "w")  
+   romfile = open(namearray[0]+".bin", "wb")  
 
    with open(args[0],mode="rb") as f:
       lines=f.readlines()
