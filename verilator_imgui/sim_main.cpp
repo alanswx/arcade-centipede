@@ -1068,11 +1068,11 @@ printf("ioctl_upload_before_eval: din %x \n",top->ioctl_din);
 
 }
 int nextchar = 0;
+int uploadnextchar = 0;
 void ioctl_upload_after_eval()
 {
     top->ioctl_addr=ioctl_next_addr;
-nextchar=top->ioctl_din;
-   //top->ioctl_dout=(unsigned char)nextchar;
+uploadnextchar=top->ioctl_din;
 if (ioctl_upload_file) printf("ioctl_upload_after_eval %x wr %x dl %x\n",top->ioctl_addr,top->ioctl_wr,top->ioctl_upload);
 }
 
@@ -1103,11 +1103,11 @@ printf("ioctl_download_before_eval %x\n",top->ioctl_addr);
 	    }
 	    	if (ioctl_file) {
 	    		int curchar = fgetc(ioctl_file);
-		
+	fprintf(stderr,"READ: %x\n",curchar);	
 	    		if (curchar!=EOF) {
 	    		//top->ioctl_dout=(char)curchar;
 	    		nextchar=curchar;
-printf("ioctl_download_before_eval: dout %x \n",top->ioctl_dout);
+printf("ioctl_download_before_eval: dout %x %x\n",top->ioctl_dout,nextchar);
 	    		ioctl_next_addr++;
 	    		}
 	    	}
@@ -1123,7 +1123,7 @@ void ioctl_download_after_eval()
 {
     top->ioctl_addr=ioctl_next_addr;
    top->ioctl_dout=(unsigned char)nextchar;
-if (ioctl_file) printf("ioctl_download_after_eval %x wr %x dl %x\n",top->ioctl_addr,top->ioctl_wr,top->ioctl_download);
+if (ioctl_file) printf("ioctl_download_after_eval %x wr %x dl %x %x\n",top->ioctl_addr,top->ioctl_wr,top->ioctl_download,top->ioctl_dout);
 }
 
 void start_save_vram() {
