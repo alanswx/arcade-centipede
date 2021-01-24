@@ -54,6 +54,7 @@ CC_OPT =
 
 V_SRC = \
         centipede_verilator.v \
+        hiscore.sv \
         dpram.v \
         $(RTL)/centipede.v $(RTL)/p6502.v $(RTL)/pokey.v \
         $(RTL)/ram.v $(RTL)/rom.v \

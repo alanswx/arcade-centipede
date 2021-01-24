@@ -1,3 +1,4 @@
+`timescale 1ns/1ns
 //
 // Atari Centipede, from the schematics
 //
@@ -340,7 +341,7 @@ output [7:0] ram_data
 	   .dout(rom_out[7:0]),
 	   .cs_n(rom_n));
 
-dpram_dc #(.addr_width_g(10), .data_width_g(8))
+dpram #(.addr_width_g(10), .data_width_g(8))
 ram (
 	.clock_a(s_6mhz),
 	.address_a(ab[9:0]),

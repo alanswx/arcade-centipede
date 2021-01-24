@@ -1,4 +1,4 @@
-module dpram_dc #(
+module dpram #(
     parameter addr_width_g = 10,
     parameter data_width_g = 8
 ) (
