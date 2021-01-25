@@ -143,11 +143,11 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
              state <= 3'b001;
              local_addr<=25'b0;
              base_io_addr<=25'b0;
-             ram_addr<= addr_base;
+             ram_addr<= {1'b0, addr_base};
           end
        3'b001:
            begin
-             ram_addr<= addr_base;
+             ram_addr<= {1'b0, addr_base};
               $display("HI HISCORE ?start_val==ioctl_din ioctl_din %x start_val %x ram_addr %x addr_base %x counter %x",ioctl_din,start_val,ram_addr,addr_base,counter);
          // check beginning
              if (ioctl_din==start_val)
@@ -169,9 +169,11 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
                 if (counter==total_entries)
                 begin
                    state <= 3'b110;
+                   $display("state 010 addr_base %x %x %x ",addr_base,local_addr,counter);
                    counter<=0;
 		   ram_write<=0;
                    $display("moving on..");
+                   ram_addr<= {1'b0, addr_base};
            
                 end
                 else begin
@@ -204,6 +206,8 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
         3'b100:
            begin
                state<=3'b011;
+                $display("state 100  addr_base %x %x %x %x",addr_base,local_addr,counter,ram_addr);
+                ram_addr<= {1'b0, addr_base};
 	       ram_write<=1;
            end
         3'b101:
@@ -212,8 +216,9 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
            end
         3'b110:
 	   begin
+                $display("state 110 addr_base %x %x %x  ram_addr ",addr_base,local_addr,counter,ram_addr);
 		state<=3'b100;
-                ram_addr<= addr_base;
+                ram_addr<= {1'b0, addr_base};
            end
 
    endcase
