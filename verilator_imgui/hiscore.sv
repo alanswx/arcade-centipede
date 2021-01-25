@@ -135,6 +135,12 @@ end
 //
 else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
    case (state)
+
+       //
+       // Sit in first states until game memory is validated
+       // to match hiscore table start/end values
+       //
+
        // start with counter == 0?
        3'b000: // start
          // setup beginning addr 
@@ -145,7 +151,9 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
              base_io_addr<=25'b0;
              ram_addr<= {1'b0, addr_base};
           end
-       3'b001:
+     
+       3'b001:  //  check each start_val
+
            begin
              ram_addr<= {1'b0, addr_base};
               $display("HI HISCORE ?start_val==ioctl_din ioctl_din %x start_val %x ram_addr %x addr_base %x counter %x",ioctl_din,start_val,ram_addr,addr_base,counter);
@@ -158,15 +166,14 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
                 ram_addr<= end_addr;
              end
          end
-        // check end
-       3'b010:
+       3'b010:  // check each end_val
 	     begin
              // $display("HI HISCORE ?end_val==ioctl_din ioctl_din %x end_val %x ram_addr %x counter %x",ioctl_din,end_val,ram_addr,counter);
              if (ioctl_din==end_val)
              begin
                  $display("HI HISCORE end_val==ioctl_din");
                    // check to see if we are at the end..
-                if (counter==total_entries)
+                if (counter==total_entries)   // we finished and validated - move to phase II, copying scores into game ram
                 begin
                    state <= 3'b110;
                    $display("state 010 addr_base %x %x %x ",addr_base,local_addr,counter);
@@ -176,35 +183,41 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
                    ram_addr<= {1'b0, addr_base};
            
                 end
-                else begin
+                else begin  // increment counter, and check next entry
                    $display("try next entry");
 		   counter<=counter+1'b1;
                    state <= 3'b000;
                 end
              end
              end
+       //
+       //  this section walks through our temporary ram and copies into game ram
+       //  it needs to happen in chunks, because the game ram isn't necessarily consecutive
+       //
+
        3'b011:
             begin
                 local_addr<= local_addr+1'b1;
                 $display("DUMP local_addr %x ram_addr %x addr_base %x base_io_addr %x end_addr %x ram_write %x",local_addr,ram_addr,addr_base,base_io_addr,end_addr,ram_write);
                 if (ram_addr==end_addr[24:0])
                 begin
-                   if (counter==total_entries) begin
+                   if (counter==total_entries) begin // DONE
                      $display("counter==total %x == %x done writing",counter,total_entries);
-                      ram_write<=0;
                       state<=3'b101;
                    end else begin
                      $display("increment counter %x ",counter);
                      counter<=counter+1'b1;
                      base_io_addr<=local_addr+1'b1;
-                     state<=3'b100;
-		     ram_write<=0;
+                     state<=3'b110;
                    end
+                end else begin
+                   ram_addr<= addr_base + (local_addr - base_io_addr);
+                   state<=3'b111;
                 end
-                ram_addr<= addr_base + (local_addr - base_io_addr);
+                ram_write<=0;
             end
         3'b100:
-           begin
+           begin // our local ram should be correct, 
                state<=3'b011;
                 $display("state 100  addr_base %x %x %x %x",addr_base,local_addr,counter,ram_addr);
                 ram_addr<= {1'b0, addr_base};
@@ -214,11 +227,15 @@ else if (done_downloading==1'b1 && ioctl_upload==1'b0) begin
 	   begin
 		ram_write<=0;
            end
-        3'b110:
+        3'b110:  // counter is correct, next state the output of our local ram will be correct
 	   begin
                 $display("state 110 addr_base %x %x %x  ram_addr ",addr_base,local_addr,counter,ram_addr);
 		state<=3'b100;
-                ram_addr<= {1'b0, addr_base};
+           end
+        3'b111: // local ram is  correct
+           begin
+	        ram_write<=1;
+                state<=3'b011;
            end
 
    endcase
